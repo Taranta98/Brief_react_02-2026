@@ -21,11 +21,11 @@ export class TournamentService {
     }
     static async update({ id, data }: { id: number, data: Omit<Tournament, 'id'> }): Promise<Tournament> {
 
-        const map = await myFetch<ServerTournament>(`${myEnv.backendApiUrl}/tournaments/${id}`, {
+        const player = await myFetch<ServerTournament>(`${myEnv.backendApiUrl}/tournaments/${id}`, {
             method: 'PUT',
             body: JSON.stringify(tournamentToServerTournament(data))
         });
-        return serverTournamentToTournament(map);
+        return serverTournamentToTournament(player);
     }
      
     static async delete(id: number ) : Promise<void>{
