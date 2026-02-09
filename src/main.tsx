@@ -1,11 +1,17 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import "./index.css"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { createBrowserRouter, RouterProvider } from "react-router"
-import MainLayout from "./layouts/MainLayout"
+import HomePage from "./features/pages/HomePage"
+import NotFoundPage from "./features/pages/NotFoundPage"
 import PlayerList from "./features/player/PlayerList"
+import TournamentBracket from "./features/tennisMatches/TennisMatchesList"
 import TournamentList from "./features/tournament/TournamentList"
+import "./index.css"
+import MainLayout from "./layouts/MainLayout"
+
+
+
 
 
 const router = createBrowserRouter([
@@ -13,6 +19,10 @@ const router = createBrowserRouter([
     path:'/',
     element:<MainLayout/>,
     children: [
+      {
+        index:true,
+        element:<HomePage/>
+      },
      {
       path:'/players',
       element:<PlayerList/>
@@ -20,8 +30,17 @@ const router = createBrowserRouter([
      {
       path:'/tournaments',
       element: <TournamentList/>
+     },
+     {
+      path:'/tennismatches',
+      element:<TournamentBracket/>
      }
-    ]
+  
+  ]
+  },
+   {
+    path:'*',
+    element:<NotFoundPage/>
   }
 ])
 

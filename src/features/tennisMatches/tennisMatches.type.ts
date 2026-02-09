@@ -1,4 +1,11 @@
 
+export type PlayerData = {
+  id: number;
+  firstName: string;
+  lastName: string;
+};
+
+
 export type TennisMatches = {
     id: number;
     tournamentId: number;
@@ -10,11 +17,12 @@ export type TennisMatches = {
     nextMatchId: number;
     matchNumber: number;
     state: string;
+      player1?: PlayerData; // <-- aggiunto
+  player2?: PlayerData; 
 }
 
 export type ServerTennisMatches = {
     id: number;
-
     tournament_id: number;
     player1_id: number;
     player2_id: number;
@@ -24,6 +32,8 @@ export type ServerTennisMatches = {
     next_match_id: number;
     match_number: number;
     state: string;
+    player1?: { id: number, first_name: string, last_name: string };
+    player2?: { id: number, first_name: string, last_name: string };
 }
 
 export function serverTennisMatchesToTennisMatches(input: ServerTennisMatches): TennisMatches {
@@ -37,9 +47,20 @@ export function serverTennisMatchesToTennisMatches(input: ServerTennisMatches): 
         winnerId: input.winner_id,
         nextMatchId: input.next_match_id,
         matchNumber: input.match_number,
-        state: input.state
-    }
-};
+        state: input.state,
+        player1: input.player1 ? {
+            id: input.player1.id,
+            firstName: input.player1.first_name,
+            lastName: input.player1.last_name
+        } : undefined,
+        player2: input.player2 ? {
+            id: input.player2.id,
+            firstName: input.player2.first_name,
+            lastName: input.player2.last_name
+        } : undefined
+    };
+}
+
 
 export function tennisMatchesToServerTennisMatches(input: Omit<TennisMatches, 'id'>): Omit<ServerTennisMatches, 'id'> {
     return {

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CheckIcon } from "lucide-react";
@@ -12,6 +12,7 @@ import type { Player } from "../player/player.type";
 interface TournamentPlayersSelectorProps {
   selectedPlayers: Player[];
   setSelectedPlayers: (players: Player[]) => void;
+  maxPlayers?: number; 
 }
 
 const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
@@ -24,7 +25,6 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
     queryFn: PlayerService.list,
   });
 
-  // Stato ricerca
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filtra giocatori in base a nome/cognome
@@ -36,21 +36,23 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
     );
   }, [allPlayers, searchTerm]);
 
-  // Toggle giocatore selezionato
+  // Toggle giocatore selezionato con limite massimo di 8
   const togglePlayer = (player: Player) => {
-    if (selectedPlayers.some((p) => p.id === player.id)) {
+    const isSelected = selectedPlayers.some((p) => p.id === player.id);
+
+    if (isSelected) {
+      // Deseleziona
       setSelectedPlayers(selectedPlayers.filter((p) => p.id !== player.id));
     } else {
+      // Non aggiungere se siamo già a 8
+      if (selectedPlayers.length >= 8) return;
       setSelectedPlayers([...selectedPlayers, player]);
     }
   };
 
-  // Funzione per verificare potenza di 2
-  const isPowerOfTwo = (n: number) => n > 0 && (n & (n - 1)) === 0;
-
   return (
     <div className="my-4">
-      <h3 className="font-semibold mb-2">Seleziona giocatori</h3>
+      <h3 className="font-semibold mb-2">Seleziona giocatori (8)</h3>
 
       {/* Input ricerca */}
       <Input
@@ -68,6 +70,7 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
           <AnimatePresence>
             {filteredPlayers.slice(0, 50).map((player) => {
               const isSelected = selectedPlayers.some((p) => p.id === player.id);
+
               return (
                 <motion.div
                   key={player.id}
@@ -78,10 +81,16 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
                 >
                   <Button
                     variant={isSelected ? "secondary" : "outline"}
-                    className={cn("flex justify-between items-center w-full")}
+                    className={cn(
+                      "flex justify-between items-center w-full",
+                      selectedPlayers.length >= 8 && !isSelected
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    )}
                     onClick={() => togglePlayer(player)}
+                    disabled={selectedPlayers.length >= 8 && !isSelected}
                   >
-                    <span className=" wrap-break-word whitespace-normal">{player.firstName} {player.lastName}</span>
+                    <span className="whitespace-normal">{player.firstName} {player.lastName}</span>
                     {isSelected && <CheckIcon className="w-4 h-4" />}
                   </Button>
                 </motion.div>
@@ -93,13 +102,12 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
 
       {/* Riepilogo selezionati */}
       <div className="mt-3 text-sm">
-        <p>
-          Giocatori selezionati: {selectedPlayers.length}{" "}
-          {!isPowerOfTwo(selectedPlayers.length) &&
-            selectedPlayers.length > 0 &&
-            "(Il numero deve essere potenza di 2)"}
+        <p className={selectedPlayers.length !== 8 ? "text-red-500 font-medium" : "text-green-600 font-medium"}>
+          Giocatori selezionati: {selectedPlayers.length} / 8{" "}
+          {selectedPlayers.length !== 8 && "(Seleziona esattamente 8 giocatori)"}
         </p>
-        <ul className="list-disc list-inside max-h-32 overflow-y-auto">
+
+        <ul className="list-disc list-inside max-h-32 overflow-y-auto mt-1">
           {selectedPlayers.map((p) => (
             <li key={p.id}>
               {p.firstName} {p.lastName}
