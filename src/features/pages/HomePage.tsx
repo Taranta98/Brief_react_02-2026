@@ -1,27 +1,36 @@
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
+import { Trophy, User } from "lucide-react"
 
 const HomePage = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-4">
-      
+    <div className="flex flex-col items-center justify-center h-full px-6 text-slate-100">
+
       {/* Titolo principale */}
-      <h1 className="text-6xl sm:text-7xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-green-500 mb-4">
-        Benvenuto!
+      <h1 className="text-6xl sm:text-7xl font-extrabold uppercase tracking-wide text-yellow-400 drop-shadow-lg mb-4">
+        Benvenuto su ATP Manager
       </h1>
-
-      {/* Sottotitolo / frase */}
-      <p className="text-xl sm:text-2xl text-gray-700 max-w-xl mb-8">
-        Gestisci facilmente tornei e giocatori, monitora lo stato delle partite e tieni tutto sotto controllo. 🎾
-      </p>
-
       {/* Bottone principale */}
-      <Button
-        nativeButton={false}
-        className="bg-gradient-to-r from-teal-400 to-green-500 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:scale-105 hover:brightness-110 transition-all"
-      >
-        <Link to="/tournaments">Vedi i tornei</Link>
-      </Button>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Button
+          nativeButton={false}
+          className="flex items-center gap-2 bg-yellow-500/20 hover:bg-yellow-500/40 text-yellow-400 font-semibold px-6 py-3 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
+        >
+          <Trophy size={20} /> Tornei
+          <Link to="/tournaments" className="absolute "/>
+        </Button>
+
+        <Button
+          nativeButton={false}
+          className="flex items-center gap-2 bg-yellow-500/20 hover:bg-yellow-500/40 text-yellow-400 font-semibold px-6 py-3 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
+        >
+          <User size={20} /> Giocatori
+          <Link to="/players" className="absolute "/>
+        </Button>
+      </div>
+
+      {/* Sfondo decorativo */}
+      <div className="absolute  -z-10 bg-linear-to-br from-slate-900 via-slate-950 to-black opacity-60"></div>
     </div>
   )
 }

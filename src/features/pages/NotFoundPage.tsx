@@ -1,31 +1,46 @@
-import { Button } from "@/components/ui/button"
-import { Link } from "react-router-dom"
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { AlertTriangle } from "lucide-react";
 
 const NotFoundPage = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-green-50 to-green-100 px-4">
-      
-      {/* Codice 404 grande e moderno */}
-      <h1 className="text-[12rem] sm:text-[14rem] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-green-500 animate-bounce">
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+
+      {/* Codice 404 grande con gradiente coerente al layout */}
+      <h1 className="text-[10rem] sm:text-[12rem] font-extrabold tracking-widest 
+                     text-transparent bg-clip-text 
+                     bg-linear-to-r from-yellow-400 via-yellow-500 to-yellow-600 
+                     drop-shadow-lg">
         404
       </h1>
 
-      {/* Messaggio */}
-      <p className="mt-4 text-xl sm:text-2xl text-gray-700 font-semibold text-center max-w-md">
-        Ops! La pagina che stai cercando non esiste.
+      {/* Icona di supporto visivo */}
+      <AlertTriangle size={48} className="text-yellow-500 mt-2" />
+
+      {/* Messaggio principale */}
+      <h2 className="mt-6 text-2xl sm:text-3xl font-bold text-slate-100">
+        Pagina non trovata
+      </h2>
+
+      <p className="mt-3 text-slate-400 max-w-md">
+        La risorsa che stai cercando non esiste oppure è stata rimossa.
+        Controlla l'URL oppure torna alla dashboard principale.
       </p>
 
-      {/* Bottone moderno */}
+      {/* Pulsante coerente con il design del progetto */}
       <div className="mt-8">
         <Button
           nativeButton={false}
-          className="bg-gradient-to-r from-teal-400 to-green-500 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:scale-105 hover:brightness-110 transition-all"
+          className="bg-yellow-500 text-slate-950 font-semibold 
+                     hover:bg-yellow-400 transition-all px-6 py-3"
         >
-          <Link to="/">Torna alla Home</Link>
+          <Link to="/tournaments">
+            Torna ai Tornei
+          </Link>
         </Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default NotFoundPage
+export default NotFoundPage;

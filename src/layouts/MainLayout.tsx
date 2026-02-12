@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button";
+
+
 import PlayerCreateButton from "@/features/player/PlayerCreateButton";
 import TournamentCreateButton from "@/features/tournament/TournamentCreateButton";
 import { Home, Trophy, User } from "lucide-react";
@@ -6,53 +7,58 @@ import { Link, Outlet } from "react-router-dom";
 
 const MainLayout = () => {
   return (
-    <div className="flex h-screen bg-green-50">
+    <div className="flex h-screen bg-slate-950 text-slate-100">
 
-      {/* Sidebar sinistra */}
-      <aside className="w-72 flex flex-col h-screen p-6 shadow-lg"
-             style={{
-               background: "linear-gradient(180deg, #2a9d8f 0%, #52b788 60%, #d8f3dc 100%)"
-             }}>
+    {/*Gestisco la sibar a sinistra*/}
+      <aside
+        className="w-72 flex flex-col h-screen p-8 shadow-2xl border-r border-yellow-500/20"
+        style={{
+          background:
+            "linear-gradient(180deg, #0b132b 0%, #1c2541 50%, #3a506b 100%)"
+        }}
+      >
         
-        {/* Logo Sidebar */}
-        <div className="flex items-center gap-3 mb-8">
-          <span className="text-4xl">🎾</span>
-          <h2 className="text-2xl font-bold tracking-wide text-white drop-shadow-md">Tournament Manager</h2>
+        {/* Logo sidebar */}
+        <div className="flex items-center gap-4 mb-12">
+          <span className="text-4xl drop-shadow-lg">🎾</span>
+          <h2 className="text-2xl font-extrabold tracking-widest uppercase text-yellow-400">
+            ATP Manager
+          </h2>
         </div>
 
-        {/* Menu con scroll se necessario */}
-        <nav className="flex-1 flex flex-col gap-4 overflow-y-auto">
+        {/* Menu dove gestisco i collegamenti alle diverse pagine*/}
+        <nav className="flex-1 flex flex-col gap-5 overflow-y-auto">
           <Link
             to="/tournaments"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 hover:bg-white/30 transition-colors font-semibold text-white"
+            className="flex items-center gap-3 px-5 py-3 rounded-xl bg-white/5 hover:bg-yellow-500/10 hover:text-yellow-400 transition-all duration-200 font-semibold tracking-wide border border-transparent hover:border-yellow-500/40"
           >
-            <Home size={24}/> Tornei
+            <Home size={22}/> Tornei
           </Link>
 
           <Link
             to="/players"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 hover:bg-white/30 transition-colors font-semibold text-white"
+            className="flex items-center gap-3 px-5 py-3 rounded-xl bg-white/5 hover:bg-yellow-500/10 hover:text-yellow-400 transition-all duration-200 font-semibold tracking-wide border border-transparent hover:border-yellow-500/40"
           >
-            <User size={24}/> Giocatori
+            <User size={22}/> Giocatori
           </Link>
 
           <Link
-            to="/tournaments"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 hover:bg-white/30 transition-colors font-semibold text-white"
+            to="/history"
+            className="flex items-center gap-3 px-5 py-3 rounded-xl bg-white/5 hover:bg-yellow-500/10 hover:text-yellow-400 transition-all duration-200 font-semibold tracking-wide border border-transparent hover:border-yellow-500/40"
           >
-            <Trophy size={24}/> Storico
+            <Trophy size={22}/> Storico
           </Link>
         </nav>
 
-        {/* Pulsanti azione sempre visibili */}
-        <div className="mt-auto flex flex-col gap-3">
+        {/* Pulsanti di creazione Giocatore e Torneo (rimangono visibili) */}
+        <div className="mt-auto flex flex-col gap-4 pt-6 border-t border-yellow-500/20">
           <PlayerCreateButton />
           <TournamentCreateButton />
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 p-6 overflow-auto">
+      <main className="flex-1 p-10 overflow-auto bg-linear-to-b from-slate-900 via-slate-950 to-black">
         <div className="max-w-7xl mx-auto">
           <Outlet />
         </div>

@@ -1,180 +1,153 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
-import {
-  CalendarIcon,
-  Loader2,
-  PlusIcon,
-  CheckCircle2,
-} from "lucide-react";
-import React from "react";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
-
-import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod"; 
+import { useMutation, useQueryClient } from "@tanstack/react-query"; 
+import { format } from "date-fns"; 
+import { CalendarIcon, Loader2, PlusIcon, CheckCircle2 } from "lucide-react"; 
+import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form"; 
+import { z } from "zod"; 
+import { Button } from "@/components/ui/button"; 
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; 
+import { cn } from "@/lib/utils"; 
+import { TournamentService } from "@/features/tournament/tournament.service"; 
+import type { Player } from "@/features/player/player.type"; 
+import TournamentPlayersSelector from "../tournamentsPlayers/TornamentPlayersSelector"; 
 
-import { TournamentService } from "@/features/tournament/tournament.service";
-import { TournamentPlayersService } from "@/features/tournamentsPlayers/tournamentPlayers.service";
-import type { Player } from "@/features/player/player.type";
-import TournamentPlayersSelector from "../tournamentsPlayers/TornamentPlayersSelector";
-
-// --------------------
-// SCHEMA
-// --------------------
+// SCHEMA ZOD PER VALIDAZIONE FORM TORNEO
 const tournamentSchema = z.object({
-  name: z.string().min(1, "Nome obbligatorio"),
-  location: z.string().min(1, "Location obbligatoria"),
-  date: z.date( "Data obbligatoria" ),
+  name: z.string().min(1, "Nome obbligatorio"), 
+  location: z.string().min(1, "Location obbligatoria"), 
+  date: z.date("Data obbligatoria"), 
 });
 
+// Tipizzazione form basata sullo schema Zod
 type TournamentForm = z.infer<typeof tournamentSchema>;
 
-// --------------------
-// UTILS
-// --------------------
+// FUNZIONE PER CALCOLARE LO STATO DEL TORNEO (in corso o in programma)
 const calculateState = (date: Date) => {
   const today = new Date();
-  return today < date ? "in programma" : "in corso";
+  return today < date ? "in programma" : "in corso"; 
 };
 
-// --------------------
-// COMPONENT
-// --------------------
-const TournamentCreateButton: React.FC = () => {
+const TournamentCreateButton = () => {
+   // Client React Query per invalidare cache
   const queryClient = useQueryClient();
 
-  const [open, setOpen] = React.useState(false);
-  const [showSuccess, setShowSuccess] = React.useState(false);
-  const [selectedPlayers, setSelectedPlayers] = React.useState<Player[]>([]);
-  const [playersError, setPlayersError] = React.useState<string | null>(null);
+  // Apri/chiudi dialog
+  const [open, setOpen] = useState(false); 
+  const [showSuccess, setShowSuccess] = useState(false); 
+  const [selectedPlayers, setSelectedPlayers] = useState<Player[]>([]); 
+  const [playersError, setPlayersError] = useState<string | null>(null); 
 
+  //Form
   const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors },
+    register, 
+    handleSubmit, 
+    control, 
+    reset, 
+    formState: { errors }, 
   } = useForm<TournamentForm>({
-    resolver: zodResolver(tournamentSchema),
+    resolver: zodResolver(tournamentSchema), 
   });
 
+  // MUTAZIONE PER CREARE TORNEO
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: TournamentForm) => {
-      const playerIds = selectedPlayers.map((p) => p.id);
-
-      const tournament = await TournamentService.create({
+      // Estraggo solo gli ID dei giocatori selezionati
+      const playerIds = selectedPlayers.map((p) => p.id); 
+      return TournamentService.create({
         data: {
           ...data,
-          date: data.date.toISOString(),
-          state: calculateState(data.date),
-          player_ids: playerIds,
+          //Trasformo la data in stringa
+          date: data.date.toISOString(), 
+          state: calculateState(data.date), 
+         // Qui aggiungo i giocatori tramite player_ids
+          player_ids: playerIds, 
         } as any,
+        //Ho usato any perche avevo problemi di tipizzazione data
       });
-
-      for (const player of selectedPlayers) {
-        await TournamentPlayersService.create({
-          tournamentId: tournament.id,
-          playerId: player.id,
-        });
-      }
-
-      return tournament;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tournaments"] });
-
-      setShowSuccess(true);
-
+      queryClient.invalidateQueries({ queryKey: ["tournaments"] }); 
+      setShowSuccess(true); 
       setTimeout(() => {
+         // Nascondo il messaggio dopo 1.3 econdi
         setShowSuccess(false);
-        setOpen(false);
-        reset();
-        setSelectedPlayers([]);
-        setPlayersError(null);
+        setOpen(false); 
+        reset(); 
+        setSelectedPlayers([]); 
+        setPlayersError(null); 
       }, 1300);
     },
   });
 
+  // FUNZIONE CHIAMATA AL SUBMIT
   const onSubmit = (data: TournamentForm) => {
     if (selectedPlayers.length !== 8) {
-      setPlayersError("Devi selezionare esattamente 8 giocatori");
+      //I giocatori devono essere esattamente 8 !!!
+      setPlayersError("Devi selezionare esattamente 8 giocatori"); 
       return;
     }
-
     setPlayersError(null);
-    mutate(data);
+    //creo torneo con mutazione
+    mutate(data); 
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* Trigger */}
+      {/* Qua uso un dialog trigger che funge come Pulsante per 'Nuovo Torneo' */}
       <DialogTrigger nativeButton={false}>
-        <div className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-teal-500 to-green-500 text-white font-bold px-5 py-2 shadow-lg cursor-pointer select-none transition-all hover:scale-105 hover:brightness-110">
+        <div className="inline-flex items-center gap-2 rounded-lg bg-linear-to-br from-slate-900 via-slate-950 to-black text-yellow-400 font-bold px-5 py-2 shadow-lg cursor-pointer select-none transition-all hover:scale-105 hover:brightness-110">
           <PlusIcon size={20} />
           Nuovo Torneo
         </div>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-lg rounded-xl bg-white shadow-2xl p-6">
+      <DialogContent className="sm:max-w-lg rounded-xl bg-linear-to-br from-slate-950 via-slate-900 to-black shadow-2xl p-6 border border-yellow-500/20">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold flex items-center gap-2">
+          <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-yellow-400">
             🎾 Aggiungi nuovo torneo
           </DialogTitle>
         </DialogHeader>
 
+        {/* Se showsucces cambia in true, mostro il messaggio di successo */}
         {showSuccess ? (
           <div className="flex flex-col items-center justify-center gap-2 py-10 animate-fade-in">
             <CheckCircle2 className="text-green-500" size={48} />
-            <p className="text-green-600 font-semibold">
+            <p className="text-green-400 font-semibold text-lg">
               Torneo creato con successo
             </p>
           </div>
         ) : (
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4 mt-4"
-          >
-            {/* Nome */}
+          /* Qua uso la form per creazione successo */
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-4">
+            {/* Input per il nome del torneo */}
             <div>
               <Input
                 placeholder="Nome torneo"
                 {...register("name")}
-                className="border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 hover:border-green-400 transition-all"
+                className="border-gray-700 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 hover:border-yellow-300 bg-slate-900 text-yellow-400 transition-all"
               />
               {errors.name && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.name.message}
-                </p>
+                <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
               )}
             </div>
 
-            {/* Location */}
+            {/* Input per il luogo del torneo */}
             <div>
               <Input
                 placeholder="Location"
                 {...register("location")}
-                className="border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 hover:border-green-400 transition-all"
+                className="border-gray-700 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 hover:border-yellow-300 bg-slate-900 text-yellow-400 transition-all"
               />
               {errors.location && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.location.message}
-                </p>
+                <p className="text-sm text-red-500 mt-1">{errors.location.message}</p>
               )}
             </div>
 
-            {/* Data */}
+            {/*  uso Controller che è un componente  che  permette di collegare input complessi o controllaticome un calendario*/}
             <Controller
               control={control}
               name="date"
@@ -184,55 +157,47 @@ const TournamentCreateButton: React.FC = () => {
                     <Button
                       variant="outline"
                       className={cn(
-                        "justify-start text-left w-full font-normal border-gray-300 hover:border-green-400 focus:border-green-500 focus:ring-2 focus:ring-green-200",
+                        "justify-start text-left w-full font-normal border-gray-700 text-yellow-400 hover:border-yellow-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200",
                         !field.value && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {field.value
-                        ? format(field.value, "dd/MM/yyyy")
-                        : "Scegli la data"}
+                      {field.value ? format(field.value, "dd/MM/yyyy") : "Scegli la data"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0 bg-slate-900">
                     <Calendar
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      initialFocus
+                      className="bg-slate-950 text-yellow-400"
                     />
                   </PopoverContent>
                 </Popover>
               )}
             />
-            {errors.date && (
-              <p className="text-sm text-red-500">{errors.date.message}</p>
-            )}
+            {errors.date && <p className="text-sm text-red-500">{errors.date.message}</p>}
 
-            {/* Giocatori */}
+            {/* Qua uso il mio componente che ho creato per sceglier i giocatori da affiancare al torneo */}
             <div>
               <TournamentPlayersSelector
                 selectedPlayers={selectedPlayers}
                 setSelectedPlayers={setSelectedPlayers}
-                maxPlayers={8} // Opzionale: se vuoi limitare la selezione
+                maxPlayers={8}
               />
               {playersError && (
                 <p className="text-sm text-red-500 mt-1">{playersError}</p>
               )}
             </div>
 
-            {/* Footer */}
             <DialogFooter className="mt-4">
               <Button
                 type="submit"
-                disabled={isPending || selectedPlayers.length !== 8}
-                className="bg-gradient-to-r from-yellow-400 to-yellow-300 text-green-900 font-semibold px-5 py-2 rounded-lg shadow-md hover:scale-105 transition-transform"
+                //Disabilita nel momento in cui è in caricamento e i giocatori selezionati non sono esattamente 8 
+                disabled={isPending || selectedPlayers.length !== 8} 
+                className="bg-linear-to-r from-yellow-400 to-yellow-300 text-slate-950 font-bold px-5 py-2 rounded-lg shadow-md hover:scale-105 transition-transform"
               >
-                {isPending ? (
-                  <Loader2 className="animate-spin h-5 w-5" />
-                ) : (
-                  "Salva"
-                )}
+                {isPending ? <Loader2 className="animate-spin h-5 w-5" /> : "Salva"}
               </Button>
             </DialogFooter>
           </form>

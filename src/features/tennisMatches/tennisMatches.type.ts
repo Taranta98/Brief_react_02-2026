@@ -1,40 +1,44 @@
-
+//Playerdata è il tipo per definire il giocatore( senza tenere in considerazione della fitp card)
 export type PlayerData = {
-  id: number;
-  firstName: string;
-  lastName: string;
+    id: number;
+    firstName: string;
+    lastName: string;
 };
 
-
+//Tipizzo i dati delle partite / per bracket
 export type TennisMatches = {
     id: number;
     tournamentId: number;
     player1Id: number;
     player2Id: number;
-    player1Score: number;
-    player2Score: number;
-    winnerId: number;
-    nextMatchId: number;
+    player1Score: number | null;
+    player2Score: number | null;
+    winnerId: number | null;
+    nextMatchId: number | null;
     matchNumber: number;
     state: string;
-      player1?: PlayerData; // <-- aggiunto
-  player2?: PlayerData; 
+    //Qui uso il tipo player data che mi servira per trovare il nome cognome del giocatore
+    player1?: PlayerData;
+    player2?: PlayerData;
 }
+
+//Tipizzo i  dati del server 
 
 export type ServerTennisMatches = {
     id: number;
     tournament_id: number;
     player1_id: number;
     player2_id: number;
-    player1_score: number;
-    player2_score: number;
-    winner_id: number;
-    next_match_id: number;
+    player1_score: number | null;
+    player2_score: number | null;
+    winner_id: number | null;
+    next_match_id: number | null;
     match_number: number;
     state: string;
     player1?: { id: number, first_name: string, last_name: string };
     player2?: { id: number, first_name: string, last_name: string };
 }
+//creo una funzione per la conversione dei dati dal server a quelli del frontend
 
 export function serverTennisMatchesToTennisMatches(input: ServerTennisMatches): TennisMatches {
     return {
@@ -61,18 +65,19 @@ export function serverTennisMatchesToTennisMatches(input: ServerTennisMatches): 
     };
 }
 
+//creo una funzion per convertire i dati dal frontend in quelli del server
 
 export function tennisMatchesToServerTennisMatches(input: Omit<TennisMatches, 'id'>): Omit<ServerTennisMatches, 'id'> {
     return {
-       tournament_id : input.tournamentId ?? null,
-      player1_id : input.player1Id ?? null,
-      player2_id : input.player2Id ?? null,
-      player1_score: input.player1Score ?? null,
-      player2_score: input.player2Score ?? null,
-      winner_id: input.winnerId ?? null,
-      next_match_id: input.nextMatchId ?? null,
-      match_number: input.matchNumber ?? 0,
-      state: input.state ?? 'scheduled'
+        tournament_id: input.tournamentId ?? null,
+        player1_id: input.player1Id ?? null,
+        player2_id: input.player2Id ?? null,
+        player1_score: input.player1Score ?? null,
+        player2_score: input.player2Score ?? null,
+        winner_id: input.winnerId ?? null,
+        next_match_id: input.nextMatchId ?? null,
+        match_number: input.matchNumber ?? 0,
+        state: input.state ?? 'scheduled'
 
     }
 } 

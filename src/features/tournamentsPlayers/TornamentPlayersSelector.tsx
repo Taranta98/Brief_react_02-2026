@@ -20,11 +20,14 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
   setSelectedPlayers,
 }) => {
   // Fetch di tutti i giocatori
+
+  //useMemo serve a memorizzare (cachare) un valore calcolato, così React non lo ricalcola ad ogni render
   const { data: allPlayers = [], isLoading, isError } = useQuery({
     queryKey: ["players"],
     queryFn: PlayerService.list,
   });
 
+//Use state per gestire la ricerca dei giocatori
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filtra giocatori in base a nome/cognome
@@ -34,36 +37,39 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
         p.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.lastName.toLowerCase().includes(searchTerm.toLowerCase())
     );
+      // useMemo ricalcola filteredPlayers solo quando cambiano allPlayers o searchTerm
   }, [allPlayers, searchTerm]);
 
-  // Toggle giocatore selezionato con limite massimo di 8
+  // Funzione per selezionare o deselezionare un giocatore
   const togglePlayer = (player: Player) => {
+     // Controlla se il giocatore è già selezionato
     const isSelected = selectedPlayers.some((p) => p.id === player.id);
-
     if (isSelected) {
-      // Deseleziona
+      // Se è già selezionato, lo rimuove dalla lista dei giocatori selezionati
       setSelectedPlayers(selectedPlayers.filter((p) => p.id !== player.id));
     } else {
-      // Non aggiungere se siamo già a 8
+       // Se non è selezionato e ci sono già 8 giocatori selezionati, return
       if (selectedPlayers.length >= 8) return;
+
+        // Altrimenti aggiunge il giocatore alla lista dei selezionati
       setSelectedPlayers([...selectedPlayers, player]);
     }
   };
 
   return (
     <div className="my-4">
-      <h3 className="font-semibold mb-2">Seleziona giocatori (8)</h3>
+      <h3 className="font-bold mb-2 text-yellow-400">Seleziona giocatori (8)</h3>
 
       {/* Input ricerca */}
       <Input
         placeholder="Cerca giocatore..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="mb-2"
+        className="mb-2 bg-slate-900 text-yellow-400 placeholder:text-yellow-300 border border-gray-700 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200"
       />
 
-      {isLoading && <div>Caricamento giocatori...</div>}
-      {isError && <div>Errore nel caricamento dei giocatori</div>}
+      {isLoading && <div className="text-yellow-400">Caricamento giocatori...</div>}
+      {isError && <div className="text-red-500">Errore nel caricamento dei giocatori</div>}
 
       {!isLoading && !isError && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
@@ -82,7 +88,7 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
                   <Button
                     variant={isSelected ? "secondary" : "outline"}
                     className={cn(
-                      "flex justify-between items-center w-full",
+                      "flex justify-between items-center w-full bg-slate-950 border border-yellow-500 text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-300 transition-all rounded-lg",
                       selectedPlayers.length >= 8 && !isSelected
                         ? "opacity-50 cursor-not-allowed"
                         : ""
@@ -91,7 +97,7 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
                     disabled={selectedPlayers.length >= 8 && !isSelected}
                   >
                     <span className="whitespace-normal">{player.firstName} {player.lastName}</span>
-                    {isSelected && <CheckIcon className="w-4 h-4" />}
+                    {isSelected && <CheckIcon className="w-4 h-4 text-green-500" />}
                   </Button>
                 </motion.div>
               );
@@ -102,12 +108,12 @@ const TournamentPlayersSelector: React.FC<TournamentPlayersSelectorProps> = ({
 
       {/* Riepilogo selezionati */}
       <div className="mt-3 text-sm">
-        <p className={selectedPlayers.length !== 8 ? "text-red-500 font-medium" : "text-green-600 font-medium"}>
+        <p className={selectedPlayers.length !== 8 ? "text-red-500 font-medium" : "text-green-500 font-medium"}>
           Giocatori selezionati: {selectedPlayers.length} / 8{" "}
           {selectedPlayers.length !== 8 && "(Seleziona esattamente 8 giocatori)"}
         </p>
 
-        <ul className="list-disc list-inside max-h-32 overflow-y-auto mt-1">
+        <ul className="list-disc list-inside max-h-32 overflow-y-auto mt-1 text-yellow-400">
           {selectedPlayers.map((p) => (
             <li key={p.id}>
               {p.firstName} {p.lastName}
